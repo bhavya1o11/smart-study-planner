@@ -32,9 +32,7 @@ This project helps break down study goals into manageable daily tasks while adap
 ---
 
 ## 🌐 Live Website
-
-(Will be added after deployment)
-
+https://smartstudyplanner-app.netlify.app/
 ---
 
 ## 📌 Future Improvements
