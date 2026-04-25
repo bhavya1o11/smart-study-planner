@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Study Planner</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- FONT -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>📚 Smart Study Planner</h1>
+    <p class="subtitle">
+        Plan smarter, stay consistent, and reach your goals 🚀
+    </p>
+
+    <!-- INPUT BOX -->
+    <div class="input-box">
+
+        <label>📅 Exam Date</label>
+        <input type="date" id="examDate">
+
+        <label>📖 Subjects</label>
+        <input type="text" id="subjects" placeholder="physics, math, english">
+
+        <div class="btn-group">
+            <button onclick="generatePlan()">Generate Plan</button>
+            <button onclick="autoAdjustPlan()" class="secondary">Auto Adjust</button>
+        </div>
+
+    </div>
+
+    <!-- OUTPUT -->
+    <div id="output"></div>
+
+    <!-- GRAPH -->
+    <div class="chart-box">
+        <canvas id="progressChart"></canvas>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
