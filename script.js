@@ -1,223 +1,132 @@
-// ===================== GENERATE PLAN =====================
+let chart;
+
 function generatePlan() {
-    const examDate = document.getElementById("examDate").value;
-    const subjectsInput = document.getElementById("subjects").value;
-    const mood = document.getElementById("mood").value;
+  const examInput = document.getElementById("examDate").value;
+  const subjectsInput = document.getElementById("subjects").value;
+  const mood = document.getElementById("mood").value;
 
-    if (!examDate || !subjectsInput) {
-        alert("Please fill all fields!");
-        return;
+  if (!examInput || !subjectsInput) {
+    alert("Enter all fields!");
+    return;
+  }
+
+  let examDate = new Date(examInput);
+  let today = new Date();
+
+  let subjects = subjectsInput.split(",").map(s => s.trim()).filter(s => s);
+
+  let subjectsPerDay = mood === "low" ? 1 : mood === "high" ? 3 : 2;
+
+  let plan = [];
+  let i = 0;
+  let currentDate = new Date(today);
+
+  while (currentDate <= examDate) {
+    let daily = [];
+
+    for (let j = 0; j < subjectsPerDay; j++) {
+      daily.push(subjects[i % subjects.length]);
+      i++;
     }
 
-    const subjects = subjectsInput.split(",").map(s => s.trim());
+    plan.push({
+      date: currentDate.toDateString(),
+      subject: daily,
+      done: false
+    });
 
-    const today = new Date();
-    const exam = new Date(examDate);
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
 
-    const totalDays = Math.ceil((exam - today) / (1000 * 60 * 60 * 24));
+  localStorage.setItem("plan", JSON.stringify(plan));
+  displayPlan();
 
-    let subjectsPerDay = 2;
-
-    if (mood === "tired") subjectsPerDay = 1;
-    if (mood === "motivated") subjectsPerDay = 3;
-
-    let plan = [];
-
-    for (let i = 0; i < totalDays; i++) {
-        let d = new Date();
-        d.setDate(today.getDate() + i);
-
-        let subjectsForDay = [];
-
-        for (let j = 0; j < subjectsPerDay; j++) {
-            subjectsForDay.push(subjects[(i + j) % subjects.length]);
-        }
-
-        plan.push({
-            date: d.toDateString(),
-            subject: subjectsForDay.join(", "),
-            done: false
-        });
-    }
-
-    localStorage.setItem("plan", JSON.stringify(plan));
-    displayPlan();
+  // 🔥 AUTO SCROLL
+  setTimeout(() => {
+    document.getElementById("output").scrollIntoView({ behavior: "smooth" });
+  }, 200);
 }
 
-// ===================== DISPLAY PLAN =====================
 function displayPlan() {
-    let plan = JSON.parse(localStorage.getItem("plan")) || [];
+  let plan = JSON.parse(localStorage.getItem("plan")) || [];
+  let output = document.getElementById("output");
+  let focus = document.getElementById("todayFocus");
 
-    if (plan.length === 0) {
-        document.getElementById("output").innerHTML =
-            "<p class='empty'>No plan yet 📚</p>";
-        return;
-    }
+  let completed = 0;
+  let subjectStats = {};
+  let progressData = [];
 
-    let today = new Date().toDateString();
+  output.innerHTML = "";
 
-    let todayTasks = [];
-    let otherTasks = [];
+  const today = new Date().toDateString();
 
-    let doneCount = 0;
+  plan.forEach((day, index) => {
+    if (day.done) completed++;
 
-    plan.forEach((item, i) => {
-        if (item.done) doneCount++;
+    progressData.push(completed);
 
-        if (item.date === today) {
-            todayTasks.push({ ...item, index: i });
-        } else {
-            otherTasks.push({ ...item, index: i });
-        }
+    day.subject.forEach(sub => {
+      subjectStats[sub] = (subjectStats[sub] || 0) + (day.done ? 1 : 0);
     });
 
-    let html = "";
-
-    // 🔥 TODAY'S FOCUS
-    if (todayTasks.length > 0) {
-        html += `<h2>🔥 Today’s Focus</h2>`;
-        html += `<div class="calendar">`;
-
-        todayTasks.forEach(item => {
-            html += `
-                <div class="day today ${item.done ? "done" : ""}" ondblclick="toggleTask(${item.index})">
-                    <div class="date">${item.date}</div>
-                    <div class="subject">${item.subject}</div>
-                </div>
-            `;
-        });
-
-        html += `</div>`;
+    if (day.date === today) {
+      focus.innerHTML = `
+        <div class="date">${day.date}</div>
+        <div>${day.subject.join(" • ")}</div>
+      `;
     }
 
-    // 📅 FULL PLAN
-    html += `<h2>📅 Your Study Plan</h2>`;
-    html += `<div class="calendar">`;
-
-    otherTasks.forEach(item => {
-        html += `
-            <div class="day ${item.done ? "done" : ""}" ondblclick="toggleTask(${item.index})">
-                <div class="date">${item.date}</div>
-                <div class="subject">${item.subject}</div>
-            </div>
-        `;
-    });
-
-    html += `</div>`;
-
-    // 📊 STATS
-    let progress = Math.round((doneCount / plan.length) * 100);
-    let streak = calculateStreak(plan);
-    let weakSubject = getWeakSubject(plan);
-
-    html += `
-        <div class="progress-container">
-            <div class="progress-bar" style="width:${progress}%"></div>
-        </div>
-
-        <p>📊 Progress: ${progress}%</p>
-        <p>🔥 Streak: ${streak} day(s)</p>
-        <p>🎯 Focus More On: ${weakSubject}</p>
+    output.innerHTML += `
+      <div class="day-card ${day.done ? "done" : ""}" ondblclick="toggleDone(${index})">
+        <div class="date">${day.date}</div>
+        <div class="subject">${day.subject.join(" • ")}</div>
+      </div>
     `;
+  });
 
-    document.getElementById("output").innerHTML = html;
+  // stats
+  let progress = Math.round((completed / plan.length) * 100) || 0;
+document.getElementById("progress").innerText = progress + "%";
+  let streak = plan.filter(d => d.done).length;
+  document.getElementById("streak").innerText = streak;
 
-    drawGraph(plan);
+  let weak = Object.keys(subjectStats).reduce((a, b) =>
+    subjectStats[a] < subjectStats[b] ? a : b, "-"
+  );
+  document.getElementById("weak").innerText = weak;
+
+  drawChart(progressData);
 }
 
-// ===================== TOGGLE TASK =====================
-function toggleTask(index) {
-    let plan = JSON.parse(localStorage.getItem("plan"));
-    plan[index].done = !plan[index].done;
-
-    localStorage.setItem("plan", JSON.stringify(plan));
-    displayPlan();
+function toggleDone(index) {
+  let plan = JSON.parse(localStorage.getItem("plan"));
+  plan[index].done = !plan[index].done;
+  localStorage.setItem("plan", JSON.stringify(plan));
+  displayPlan();
 }
 
-// ===================== STREAK =====================
-function calculateStreak(plan) {
-    let streak = 0;
+function drawChart(data) {
+  let ctx = document.getElementById("chart");
 
-    let sorted = [...plan].sort((a, b) => new Date(a.date) - new Date(b.date));
+  if (chart) chart.destroy();
 
-    for (let i = sorted.length - 1; i >= 0; i--) {
-        if (sorted[i].done) {
-            streak++;
-        } else {
-            break;
-        }
+  chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: data.map((_, i) => i + 1),
+      datasets: [{
+        label: "Progress",
+        data: data,
+        tension: 0.4,
+        fill: true
+      }]
     }
-
-    return streak;
+  });
 }
 
-// ===================== WEAK SUBJECT =====================
-function getWeakSubject(plan) {
-    let subjectStats = {};
-
-    plan.forEach(item => {
-        let subjects = item.subject.split(",");
-
-        subjects.forEach(sub => {
-            sub = sub.trim();
-
-            if (!subjectStats[sub]) {
-                subjectStats[sub] = { total: 0, done: 0 };
-            }
-
-            subjectStats[sub].total++;
-
-            if (item.done) {
-                subjectStats[sub].done++;
-            }
-        });
-    });
-
-    let weakest = "None";
-    let lowestRate = Infinity;
-
-    for (let sub in subjectStats) {
-        let rate = subjectStats[sub].done / subjectStats[sub].total;
-
-        if (rate < lowestRate) {
-            lowestRate = rate;
-            weakest = sub;
-        }
-    }
-
-    return weakest;
+function autoAdjust() {
+  generatePlan();
 }
 
-// ===================== AUTO ADJUST =====================
-function autoAdjustPlan() {
-    alert("Auto-adjust feature coming soon 🚀");
-}
-
-// ===================== GRAPH =====================
-function drawGraph(plan) {
-    const ctx = document.getElementById("progressChart");
-
-    let data = [];
-    let count = 0;
-
-    plan.forEach(p => {
-        if (p.done) count++;
-        data.push(count);
-    });
-
-    if (window.chart) window.chart.destroy();
-
-    window.chart = new Chart(ctx, {
-        type: "line",
-        data: {
-            labels: data.map((_, i) => i + 1),
-            datasets: [{
-                label: "Tasks Completed",
-                data: data
-            }]
-        }
-    });
-}
-
-// ===================== LOAD =====================
 window.onload = displayPlan;
+
