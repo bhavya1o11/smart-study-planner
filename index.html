@@ -1,62 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-LRM3L3T5PD"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <meta charset="UTF-8">
+  <title>Smart Study Planner</title>
 
-  gtag('config', 'G-LRM3L3T5PD');
-</script>
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
-    <meta charset="UTF-8">
-    <title>Smart Study Planner</title>
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
 
-    <link rel="stylesheet" href="style.css">
-
-    <!-- FONT -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- Chart -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
 <div class="container">
 
-    <h1>📚 Smart Study Planner</h1>
-    <p class="subtitle">
-        Plan smarter, stay consistent, and reach your goals 🚀
-    </p>
+  <h1>📚 Smart Study Planner</h1>
+  <p class="subtitle">Plan smarter, stay consistent, and reach your goals 🚀</p>
 
-    <!-- INPUT BOX -->
-    <div class="input-box">
+  <div class="card">
+    <label>📅 Exam Date</label>
+    <input type="date" id="examDate">
 
-        <label>📅 Exam Date</label>
-        <input type="date" id="examDate">
+    <label>📖 Subjects</label>
+    <input type="text" id="subjects" placeholder="physics, chemistry, math">
 
-        <label>📖 Subjects</label>
-        <input type="text" id="subjects" placeholder="physics, math, english">
+    <label>🧠 Mood</label>
+    <select id="mood">
+      <option value="low">😴 Low</option>
+      <option value="normal" selected>🙂 Normal</option>
+      <option value="high">🔥 Motivated</option>
+    </select>
 
-        <div class="btn-group">
-            <button onclick="generatePlan()">Generate Plan</button>
-            <button onclick="autoAdjustPlan()" class="secondary">Auto Adjust</button>
-        </div>
-
+    <div class="btns">
+      <button onclick="generatePlan()">Generate Plan</button>
+      <button onclick="autoAdjust()">Auto Adjust</button>
     </div>
+  </div>
 
-    <!-- OUTPUT -->
-    <div id="output"></div>
+  <!-- STATS -->
+  <div class="stats">
 
-    <!-- GRAPH -->
-    <div class="chart-box">
-        <canvas id="progressChart"></canvas>
-    </div>
+  <div class="stat-box">
+    <div class="stat-icon">🔥</div>
+    <div class="stat-label">Streak</div>
+    <div class="stat-value" id="streak">0</div>
+  </div>
+
+  <div class="stat-box">
+    <div class="stat-icon">📊</div>
+    <div class="stat-label">Progress</div>
+    <div class="stat-value" id="progress">0%</div>
+  </div>
+
+  <div class="stat-box">
+    <div class="stat-icon">🎯</div>
+    <div class="stat-label">Focus</div>
+    <div class="stat-value" id="weak">-</div>
+  </div>
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="script.js"></script>
+  <!-- GRAPH -->
+  <div class="card">
+    <canvas id="chart"></canvas>
+  </div>
 
+  <!-- TODAY FOCUS -->
+  <h2>🔥 Today’s Focus</h2>
+  <div id="todayFocus" class="focus-box">No focus yet</div>
+
+  <!-- PLAN -->
+  <h2>📅 Your Study Plan</h2>
+  <div id="output" class="grid"></div>
+
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
+
